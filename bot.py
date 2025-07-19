@@ -5,7 +5,6 @@ from pyrogram import Client, filters
 API_ID = int(os.getenv("API_ID"))
 API_HASH = os.getenv("API_HASH")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))  # example: -1002896194875
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -18,19 +17,23 @@ async def start(client, message):
     args = message.text.split(" ")
     if len(args) > 1:
         file_code = args[1]
-        file_id = file_data.get(file_code)
-        if file_id:
+        file_info = file_data.get(file_code)
+
+        if file_info:
             try:
+                message_id = file_info["message_id"]
+                channel_id = int(file_info["channel_id"])
+                
                 await client.copy_message(
                     chat_id=message.chat.id,
-                    from_chat_id=CHANNEL_ID,
-                    message_id=file_id
+                    from_chat_id=channel_id,
+                    message_id=message_id
                 )
             except Exception as e:
-                await message.reply(f"❌ ফাইল ফরওয়ার্ড করতে সমস্যা হয়েছে:\n`{e}`")
+                await message.reply(f"❌ ফাইল পাঠাতে সমস্যা:\n`{e}`")
         else:
-            await message.reply("❌ ফাইল পাওয়া যায়নি। ভুল লিংক হতে পারে।")
+            await message.reply("❌ ফাইল পাওয়া যায়নি! ভুল লিংক হতে পারে।")
     else:
-        await message.reply("👋 হ্যালো! লিংকের মাধ্যমে ফাইল পেতে আমাকে সঠিক লিংক দিয়ে start করুন।")
+        await message.reply("👋 হ্যালো! লিংক সহ /start দিন (যেমন `/start movieorg0002`) ফাইল পেতে।")
 
 app.run()
